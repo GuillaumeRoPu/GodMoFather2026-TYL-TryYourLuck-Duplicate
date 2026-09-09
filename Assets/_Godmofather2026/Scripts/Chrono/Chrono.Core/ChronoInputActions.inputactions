@@ -1,0 +1,67 @@
+{
+    "version": 1,
+    "name": "ChronoInputActions",
+    "maps": [
+        {
+            "name": "Chrono",
+            "id": "9d1c9b2a-1a2b-4c3d-8e4f-5a6b7c8d9e0f",
+            "actions": [
+                {
+                    "name": "StopChronoPlayerOne",
+                    "type": "Button",
+                    "id": "1a2b3c4d-5e6f-4708-9a0b-1c2d3e4f5061",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "StopChronoPlayerTwo",
+                    "type": "Button",
+                    "id": "2b3c4d5e-6f70-4819-ab1c-2d3e4f506172",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "3c4d5e6f-7081-492a-bc2d-3e4f50617283",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "StopChronoPlayerOne",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4d5e6f70-8192-4a3b-cd3e-4f5061728394",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "StopChronoPlayerTwo",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Keyboard&Mouse",
+            "bindingGroup": "Keyboard&Mouse",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
