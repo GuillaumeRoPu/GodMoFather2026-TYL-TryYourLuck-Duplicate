@@ -27,20 +27,22 @@ public class ColdHotMinigame : MonoBehaviour
 
     private GameStateCH _gameState;
 
-    private void Awake()
+    private void Start()
     {
-        _player1Turn = true;
-        _gameState = GameStateCH.Start;
-        _timer = 0;
+        StartGame();
     }
 
-    private void Start()
+    private void StartGame()
     {
         _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
         _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
         _numberResultText.color = Color.HSVToRGB(0, 0, 0);
         _enter.action.Enable();
         _enter.action.started += RedeemAnswerInput;
+        _player1Turn = true;
+        _gameState = GameStateCH.Start;
+        _timer = 0;
+        SetInfoText("1st Player can choose a number to answer");
     }
 
     private void OnDestroy()
