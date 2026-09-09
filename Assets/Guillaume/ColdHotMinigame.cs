@@ -1,21 +1,21 @@
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
-using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class ColdHotMinigame : MonoBehaviour
 {
-    [SerializeField] private TMP_InputField _inputNumberField;
-    [SerializeField] private Image _downArrow;
-    [SerializeField] private Image _upArrow;
-    [SerializeField] private TMP_Text _numberResultText;
-    [SerializeField] private TMP_Text _infoText;
-    [SerializeField] private Vector2 _minMaxNumber;
-    private int _randomNumberResult;
-    private bool _player1Turn;
-    private bool _initializdAnswerTurn;
-    private float _timer;
-    [SerializeField] private float _maxTimerAnwser;
+    [SerializeField] private TMP_InputField _inputNumberField; //Input Field for the players to answer their number
+    [SerializeField] private Image _downArrow; //image for down arrow
+    [SerializeField] private Image _upArrow; //image for up arrow
+    [SerializeField] private TMP_Text _numberResultText; //Text to display the number at the end of the game
+    [SerializeField] private TMP_Text _infoText; //Text to display information of the game
+    [SerializeField] private Vector2 _minMaxNumber; //Min and max numbers for the random number chosen
+    [SerializeField] private InputActionReference _enter; //Enter input for the input field
+    private int _randomNumberResult; //Random number chosen at the start of the game
+    private bool _player1Turn; //Boolean to know wether it's the 1st player's turn or the 2nd one's
+    private float _timer; //Timer used during the update for stuff
+    [SerializeField] private float _maxTimerAnwser; //max number for the timer. If timer goes beyong it goes on to the next state (here from answered to waitingforanswer)
 
     private enum GameStateCH
     {
@@ -39,11 +39,14 @@ public class ColdHotMinigame : MonoBehaviour
         _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
         _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
         _numberResultText.color = Color.HSVToRGB(0, 0, 0);
+        _enter.action.Enable();
+        _enter.action.started += RedeemAnswerInput;
     }
 
     private void OnDestroy()
     {
-
+        _enter.action.started -= RedeemAnswerInput;
+        _enter.action.Disable();
     }
 
     private void Update()
@@ -95,7 +98,12 @@ public class ColdHotMinigame : MonoBehaviour
         _randomNumberResult = Random.Range((int)_minMaxNumber.x, (int)_minMaxNumber.y);
     }
 
-    public void ClickedButton()
+    private void RedeemAnswerInput(InputAction.CallbackContext ctxt)
+    {
+        RedeemAnswer();
+    }
+
+    public void RedeemAnswer()
     {
         if (_gameState == GameStateCH.WaitingForAnswer)
         {
