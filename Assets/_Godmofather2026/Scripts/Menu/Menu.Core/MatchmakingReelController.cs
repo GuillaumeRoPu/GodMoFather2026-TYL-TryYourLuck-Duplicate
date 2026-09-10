@@ -3,19 +3,22 @@ using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MatchmakingController : MonoBehaviour
+public class MatchmakingReelController : MonoBehaviour
 {
     [BoxGroup("Registre"), Required]
     [SerializeField] private AvailableGamesRegistry _availableGamesRegistry;
 
-    [BoxGroup("Animation")]
-    [SerializeField] private float _minimumMatchmakingDuration = 5f;
+    [BoxGroup("References"), Required]
+    [SerializeField] private SlotMachineReelView _slotMachineReelView;
+
+    [BoxGroup("Lancement"), MinValue(0)]
+    [SerializeField] private float _delayBeforeSceneActivation = 2f;
 
     [BoxGroup("Channels"), Required]
     [SerializeField] private GameEntryGameEvent _onGameSelectedChannel;
 
     [BoxGroup("Channels"), Required]
-    [SerializeField] private VoidGameEvent _onGameLoadingCompleteChannel;
+    [SerializeField] private GameEntryGameEvent _onReadyToRevealChannel;
 
     [BoxGroup("Channels"), Required]
     [SerializeField] private VoidGameEvent _onMatchmakingFinishedChannel;
@@ -23,8 +26,20 @@ public class MatchmakingController : MonoBehaviour
     private readonly GameSelectionService _gameSelectionService = new GameSelectionService();
     private AsyncOperation _pendingSceneLoadOperation;
 
+    private void OnEnable()
+    {
+        _slotMachineReelView.OnStopAnimationComplete += HandleReelStopAnimationComplete;
+    }
+
+    private void OnDisable()
+    {
+        _slotMachineReelView.OnStopAnimationComplete -= HandleReelStopAnimationComplete;
+    }
+
     public void HandlePlayButtonPressed()
     {
+        _slotMachineReelView.StartSpin();
+
         GameEntry selectedGameEntry = _gameSelectionService.SelectRandomGame(_availableGamesRegistry.GetAllGameEntries());
         _onGameSelectedChannel.Raise(selectedGameEntry);
 
@@ -33,24 +48,33 @@ public class MatchmakingController : MonoBehaviour
 
     private IEnumerator LoadSelectedGame(GameEntry selectedGameEntry)
     {
-        float matchmakingStartTime = Time.time;
-
         AsyncOperation sceneLoadOperation = SceneManager.LoadSceneAsync(selectedGameEntry.SceneName, LoadSceneMode.Single);
         sceneLoadOperation.allowSceneActivation = false;
 
         while (sceneLoadOperation.progress < 0.9f)
             yield return null;
 
-        float elapsedMatchmakingDuration = Time.time - matchmakingStartTime;
-        float remainingMinimumDuration = _minimumMatchmakingDuration - elapsedMatchmakingDuration;
-        if (remainingMinimumDuration > 0f)
-            yield return new WaitForSeconds(remainingMinimumDuration);
-
         _pendingSceneLoadOperation = sceneLoadOperation;
-        _onGameLoadingCompleteChannel.Raise();
+        _onReadyToRevealChannel.Raise(selectedGameEntry);
+    }
 
-        Debug.Log($"[Matchmaking] Jeu selectionne pret a etre lance : {selectedGameEntry.DisplayName}");
+    public void HandleReadyToReveal(GameEntry selectedGameEntry)
+    {
+        _slotMachineReelView.StopOnGame(selectedGameEntry);
+    }
+
+    private void HandleReelStopAnimationComplete()
+    {
+        Debug.Log("[Matchmaking] Reel arrete, matchmaking termine");
         _onMatchmakingFinishedChannel.Raise();
+
+        StartCoroutine(ActivateSelectedGameSceneAfterDelay());
+    }
+
+    private IEnumerator ActivateSelectedGameSceneAfterDelay()
+    {
+        yield return new WaitForSeconds(_delayBeforeSceneActivation);
+        ActivateSelectedGameScene();
     }
 
     public void ActivateSelectedGameScene()
