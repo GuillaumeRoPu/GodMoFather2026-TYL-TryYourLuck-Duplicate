@@ -24,6 +24,8 @@ public class BombMinigame : MonoBehaviour
     }
 
     private GameStateCH _gameState;
+    private bool _player1Turn;
+    private float _timer;
 
     private void Start()
     {
