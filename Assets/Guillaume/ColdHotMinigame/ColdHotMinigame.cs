@@ -5,12 +5,13 @@ using UnityEngine.UI;
 
 public class ColdHotMinigame : MonoBehaviour
 {
-    [SerializeField] private GameObject _roundCell; //Prefab for the round ui
-    [SerializeField] private Transform _roundCellsParent; //Grid layout parent to display the rounds
+    [SerializeField] private GameObject _round1Cell; //UI for rounds
+    [SerializeField] private GameObject _round2Cell; //UI for rounds
+    [SerializeField] private GameObject _round3Cell; //UI for rounds
+    [SerializeField] private PlayerSwitch _switchPlayers;
     private GameObject[] _roundCellsList; //List of all the round objects used as ui in the grid layout above
     [SerializeField] private TMP_InputField _inputNumberField; //Input Field for the players to answer their number
-    [SerializeField] private Image _downArrow; //image for down arrow
-    [SerializeField] private Image _upArrow; //image for up arrow
+    [SerializeField] private TMP_Text _textBoardPlusMinus;
     [SerializeField] private TMP_Text _numberResultText; //Text to display the number at the end of the game
     [SerializeField] private TMP_Text _infoText; //Text to display information of the game
     [SerializeField] private Vector2 _minMaxNumber; //Min and max numbers for the random number chosen
@@ -50,7 +51,7 @@ public class ColdHotMinigame : MonoBehaviour
         Debug.Log(_roundCellsList.Length);
         for (int i = 0; i < _roundsToWin * 2 - 1; i++)
         {
-            _roundCellsList[i] = Instantiate(_roundCell, _roundCellsParent);
+            //_roundCellsList[i] = Instantiate(_roundCell, _roundCellsParent); à compléter
         }
         StartNewRound();
     }
@@ -58,22 +59,21 @@ public class ColdHotMinigame : MonoBehaviour
     private void StartNewRound()
     {
         _round += 1;
-        _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-        _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-        _numberResultText.color = Color.HSVToRGB(0, 0, 0);
+        _textBoardPlusMinus.text = "";
+        //_numberResultText.color = Color.HSVToRGB(0, 0, 0);
         if (_round % 2 == 0)
         {
             _player1Turn = false;
-            SetInfoText("2nd Player can choose a number to answer");
+            _switchPlayers.AnimSwitch(false);
         }
-        else
+        else if (_round != 1)
         {
             _player1Turn = true;
-            SetInfoText("1st Player can choose a number to answer");
+            _switchPlayers.AnimSwitch(true);
         }
         _gameState = GameStateCH.Start;
         _timer = 0;
-        _numberResultText.text = "?";
+        //_numberResultText.text = "?";
     }
 
     private void EndGame()
@@ -106,16 +106,7 @@ public class ColdHotMinigame : MonoBehaviour
                 {
                     _timer = 0;
                     _player1Turn = !_player1Turn;
-                    _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    if (_player1Turn)
-                    {
-                        SetInfoText("1st Player can choose a number to answer");
-                    }
-                    else
-                    {
-                        SetInfoText("2nd Player can choose a number to answer");
-                    }
+                    _textBoardPlusMinus.text = "";
                     ChangeGameState(GameStateCH.WaitingForAnswer);
                     Debug.Log(_round);
                 }
@@ -126,16 +117,7 @@ public class ColdHotMinigame : MonoBehaviour
                 {
                     _timer = 0;
                     _player1Turn = !_player1Turn;
-                    _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    if (_player1Turn)
-                    {
-                        SetInfoText("1st Player can choose a number to answer");
-                    }
-                    else
-                    {
-                        SetInfoText("2nd Player can choose a number to answer");
-                    }
+                    _textBoardPlusMinus.text = "";
                     StartNewRound();
                 }
                 break;
@@ -147,7 +129,7 @@ public class ColdHotMinigame : MonoBehaviour
                     Debug.Log("true");
                     break;
                 }
-                _numberResultText.color = Color.HSVToRGB(_timer, 1, 1);
+                //_numberResultText.color = Color.HSVToRGB(_timer, 1, 1);
                 break;
             default:
                 Debug.LogError("default activated in switch");
@@ -172,49 +154,85 @@ public class ColdHotMinigame : MonoBehaviour
             int answer;
             if (!int.TryParse(_inputNumberField.text, out answer))
             {
-                SetInfoText("Your answer isn't a whole number");
                 ClearInputField();
                 return;
             }
             answer = int.Parse(_inputNumberField.text);
             if (answer < _minMaxNumber.x || answer > _minMaxNumber.y)
             {
-                SetInfoText("You didn't answer a correct number");
+                ClearInputField();
             }
             else if (answer > _randomNumberResult)
             {
-                SetInfoText("The number is lower");
                 ChangeGameState(GameStateCH.Answered);
-                _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 1);
+                _textBoardPlusMinus.text = "-";
+                if (_player1Turn)
+                {
+                    _switchPlayers.AnimSwitch(true);
+                }
+                else
+                {
+                    _switchPlayers.AnimSwitch(false);
+                }
             }
             else if (answer < _randomNumberResult)
             {
                 SetInfoText("The number is higher");
                 ChangeGameState(GameStateCH.Answered);
-                _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 1);
+                _textBoardPlusMinus.text = "+";
+                if (_player1Turn)
+                {
+                    _switchPlayers.AnimSwitch(true);
+                }
+                else
+                {
+                    _switchPlayers.AnimSwitch(false);
+                }
             }
             else if (answer == _randomNumberResult)
             {
                 if (_player1Turn)
                 {
                     _player1Points++;
-                    _roundCellsList[_round - 1].GetComponent<Image>().color = new Color(0, 180, 255, 1);
+                    if (_round == 1)
+                    {
+                        _round1Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
+                    else if (_round == 2)
+                    {
+                        _round2Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
+                    else
+                    {
+                        _round3Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
                 }
                 else
                 {
-                    _roundCellsList[_round - 1].GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    if (_round == 1)
+                    {
+                        _round1Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
+                    else if (_round == 2)
+                    {
+                        _round2Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
+                    else
+                    {
+                        _round3Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
                 }
                 if (_player1Points < _roundsToWin && _roundsToWin > _round - _player1Points)
                 {
                     if (_player1Turn)
                     {
-                        SetInfoText("PLAYER 1 WON THE ROUND !");
+                        //SetInfoText("PLAYER 1 WON THE ROUND !");
                     }
                     else
                     {
-                        SetInfoText("PLAYER 2 WON THE ROUND !");
+                        //SetInfoText("PLAYER 2 WON THE ROUND !");
                     }
-                    _numberResultText.text = _randomNumberResult.ToString();
+                    //_numberResultText.text = _randomNumberResult.ToString();
                     ChangeGameState(GameStateCH.WaitingForNewRound);
                 }
                 else
@@ -222,13 +240,13 @@ public class ColdHotMinigame : MonoBehaviour
                     Debug.Log("Went there, done that");
                     if (_player1Points >= _roundsToWin)
                     {
-                        SetInfoText("PLAYER 1 WON !!!!");
+                        //SetInfoText("PLAYER 1 WON !!!!");
                     }
                     else
                     {
-                        SetInfoText("PLAYER 2 WON !!!!");
+                        //SetInfoText("PLAYER 2 WON !!!!");
                     }
-                    _numberResultText.text = _randomNumberResult.ToString();
+                    //_numberResultText.text = _randomNumberResult.ToString();
                     ChangeGameState(GameStateCH.Ended);
                 }
             }
@@ -243,7 +261,7 @@ public class ColdHotMinigame : MonoBehaviour
 
     private void SetInfoText(string text)
     {
-        _infoText.text = text;
+        //_infoText.text = text;
     }
 
     private void ChangeGameState(GameStateCH state)
