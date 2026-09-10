@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: GameEntry_ChronoClosest
   m_EditorClassIdentifier: Assembly-CSharp::GameEntry
   _gameId: chrono-closest
-  _displayName: 'Chrono : Le Plus Proche'
-  _icon: {fileID: 21300006, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  _displayName: Time Master
+  _icon: {fileID: 21300000, guid: 1d516e97fafe6764fbd4a0ed81376ebb, type: 3}
   _sceneName: Chrono1
