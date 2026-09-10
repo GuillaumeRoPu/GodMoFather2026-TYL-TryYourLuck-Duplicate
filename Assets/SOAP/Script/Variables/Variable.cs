@@ -1,3 +1,4 @@
+using System;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Events;
@@ -7,7 +8,7 @@ public abstract class Variable<T> : ScriptableObject
     [SerializeField, OnValueChanged("InvokeOnValueChangedEvent")] private T value;
     [SerializeField] private bool persistRuntimeChanges = false;
 
-    public UnityEvent<T> OnValueChanged;
+    public event Action<T> OnValueChanged;
 
     private T valueBeforePlayMode;
 
