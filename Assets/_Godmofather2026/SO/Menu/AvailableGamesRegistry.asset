@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AvailableGamesRegistry
   _gameEntriesById:
     _serializedList:
+    - Key: coldhot
+      Value: {fileID: 11400000, guid: 4e698effa202bc54da131d08ca3d4dff, type: 2}
     - Key: chrono-closest
       Value: {fileID: 11400000, guid: 9b467ea8e1ceeb54892e3580e79213c5, type: 2}
+    - Key: bomb
+      Value: {fileID: 11400000, guid: 3f1c42c3dc5635e49bdfd268e97cf5d6, type: 2}
     - Key: chrono-turnbased
       Value: {fileID: 11400000, guid: 242775f8b4c4452ed4de092f0b91ee5c, type: 2}
