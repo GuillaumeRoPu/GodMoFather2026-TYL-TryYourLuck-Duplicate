@@ -1063,7 +1063,7 @@ GameObject:
   - component: {fileID: 1392791157}
   - component: {fileID: 1392791156}
   m_Layer: 5
-  m_Name: Image
+  m_Name: ReelsBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1172,8 +1172,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchmakingReelController
   _availableGamesRegistry: {fileID: 11400000, guid: cc89b00c303131b62a1fa5c0f58daa1f, type: 2}
-  _spinConfig: {fileID: 11400000, guid: e45d0fc1cdc2c601a85201b7fdb045b9, type: 2}
   _slotMachineReelView: {fileID: 1844120579}
+  _delayBeforeSceneActivation: 2
   _onGameSelectedChannel: {fileID: 11400000, guid: fbb849da1dcaeb0645c65ef8e246c126, type: 2}
   _onReadyToRevealChannel: {fileID: 11400000, guid: fbb849da1dcaeb0645c65ef8e246c126, type: 2}
   _onMatchmakingFinishedChannel: {fileID: 11400000, guid: ad5b817e1ac6a7b7b883501ff3246175, type: 2}
