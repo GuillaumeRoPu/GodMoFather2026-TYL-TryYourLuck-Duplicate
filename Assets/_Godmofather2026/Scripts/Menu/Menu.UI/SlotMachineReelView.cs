@@ -136,7 +136,17 @@ public class SlotMachineReelView : MonoBehaviour
 
         int targetIndex = _availableGameEntries.IndexOf(_pendingTargetGameEntry);
         if (targetIndex < 0)
+        {
+            _availableGameEntries = _availableGamesRegistry.GetAllGameEntries().ToList();
+            targetIndex = _availableGameEntries.IndexOf(_pendingTargetGameEntry);
+        }
+
+        if (targetIndex < 0)
+        {
+            Debug.LogError($"[SlotMachineReelView] Le jeu selectionne '{_pendingTargetGameEntry.DisplayName}' est introuvable dans le registre des jeux disponibles, le reel ne peut pas s'arreter dessus.");
+            _isStopRequested = false;
             return;
+        }
 
         int entryCount = _availableGameEntries.Count;
         int minimumExtraSteps = entryCount * 2;
