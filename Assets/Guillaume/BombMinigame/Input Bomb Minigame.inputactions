@@ -1,0 +1,35 @@
+{
+    "version": 1,
+    "name": "Input Bomb Minigame",
+    "maps": [
+        {
+            "name": "ColdHotMinigame",
+            "id": "0dda7dd5-0bc7-43a8-accc-97ddaa97f507",
+            "actions": [
+                {
+                    "name": "Enter",
+                    "type": "Button",
+                    "id": "2c924f8f-c9e5-4ce9-bfc2-6138a008c860",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d8e37a39-84b7-496f-9f65-b6b26119fd48",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Enter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

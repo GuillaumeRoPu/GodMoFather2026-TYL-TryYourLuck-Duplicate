@@ -43,6 +43,12 @@ public class ColdHotMinigame : MonoBehaviour
         _gameState = GameStateCH.Start;
         _timer = 0;
         SetInfoText("1st Player can choose a number to answer");
+        _numberResultText.text = "?";
+    }
+
+    private void Restart()
+    {
+        StartGame();
     }
 
     private void OnDestroy()
@@ -86,6 +92,9 @@ public class ColdHotMinigame : MonoBehaviour
                 if (_timer >= 1)
                 {
                     _timer -= 1;
+                    Restart();
+                    Debug.Log("true");
+                    break;
                 }
                 _numberResultText.color = Color.HSVToRGB(_timer, 1, 1);
                 break;
