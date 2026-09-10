@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Godmofather2026/Scenes/Menu.unity
+    guid: fb055e7a3ea4921459573c2f8303298b
+  - enabled: 1
+    path: Assets/_Godmofather2026/Scenes/Chrono1.unity
+    guid: 3c615cf36077dda488ee8043784772bb
+  - enabled: 1
+    path: Assets/_Godmofather2026/Scenes/Chrono2.unity
+    guid: 3d6dd8a045a653d47bf23077ba8ea9fe
+  - enabled: 1
     path: Assets/_Godmofather2026/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:

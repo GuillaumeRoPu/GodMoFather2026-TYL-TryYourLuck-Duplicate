@@ -30,6 +30,9 @@ public class RoundManager : MonoBehaviour
 
     [BoxGroup("Channels"), Required]
     [SerializeField] private IntGameEvent _onTurnChangedChannel;
+    
+    [BoxGroup("Channels"), Required]
+    [SerializeField] private VoidGameEvent _onCountdownStartedChannel;
 
     [BoxGroup("Channels"), Required]
     [SerializeField] private IntGameEvent _onCountdownTickChannel;
@@ -43,6 +46,9 @@ public class RoundManager : MonoBehaviour
     [BoxGroup("Variables"), Required]
     [SerializeField] private FloatVariable _currentTargetTimeVariable;
 
+    [BoxGroup("Variables"), Required]
+    [SerializeField] private IntVariable _roundCountVariable;
+
     [BoxGroup("Debug"), ReadOnly]
     [SerializeField] private int _currentRoundIndex;
     
@@ -53,12 +59,19 @@ public class RoundManager : MonoBehaviour
     private ITurnProvider _turnProvider;
     private IReadOnlyList<ChronoTrack> _chronoTracks;
     private IChronoVisibility _currentVisibility;
+    private bool _autoEliminateOnExceedTarget;
+    private bool _useCooldownBetweenRounds;
+    private System.Func<bool> _isGameOverPredicate;
 
-    public void Initialize(IRoundOutcomeRule outcomeRule, ITurnProvider turnProvider, IReadOnlyList<ChronoTrack> chronoTracks)
+    public void Initialize(IRoundOutcomeRule outcomeRule, ITurnProvider turnProvider, IReadOnlyList<ChronoTrack> chronoTracks, bool autoEliminateOnExceedTarget, bool useCooldownBetweenRounds, System.Func<bool> isGameOverPredicate)
     {
         _outcomeRule = outcomeRule;
         _turnProvider = turnProvider;
         _chronoTracks = chronoTracks;
+        _autoEliminateOnExceedTarget = autoEliminateOnExceedTarget;
+        _useCooldownBetweenRounds = useCooldownBetweenRounds;
+        _isGameOverPredicate = isGameOverPredicate;
+        _roundCountVariable.Value = RoundCount;
 
         for (int trackIndex = 0; trackIndex < chronoTracks.Count; trackIndex++)
         {
@@ -71,11 +84,12 @@ public class RoundManager : MonoBehaviour
         _countdownSequence.OnCountdownTick += HandleCountdownTick;
         _countdownSequence.OnCountdownFinished += HandleCountdownFinished;
     }
+    
+    
 
     public void StartGame()
     {
         _currentRoundIndex = 0;
-        _currentRoundIndexVariable.Value = _currentRoundIndex;
         BeginRound(0);
     }
 
@@ -86,6 +100,18 @@ public class RoundManager : MonoBehaviour
 
     private void BeginRound(float cooldown)
     {
+        if (_countdownSequenceCoroutine != null)
+        {
+            StopCoroutine(_countdownSequenceCoroutine);
+            _countdownSequenceCoroutine = null;
+        }
+        _countdownSequenceCoroutine = StartCoroutine(BeginTurn(cooldown, SetUpRound));
+    }
+
+    private void SetUpRound()
+    {
+        _currentRoundIndexVariable.Value = _currentRoundIndex;
+
         RoundConfig roundConfig = _roundConfigsByIndex[_currentRoundIndex];
         _currentTargetTimeVariable.Value = roundConfig.TargetTime;
         _currentVisibility = ChronoVisibilityFactory.Create(roundConfig.VisibilityType);
@@ -94,18 +120,13 @@ public class RoundManager : MonoBehaviour
             track.ResetDisplay(_currentTargetTimeVariable.Value);
 
         _turnProvider.BeginRound();
-        
-        if (_countdownSequenceCoroutine != null)
-        {
-            StopCoroutine(_countdownSequenceCoroutine);
-            _countdownSequenceCoroutine = null;
-        }
-        _countdownSequenceCoroutine = StartCoroutine(BeginTurn(cooldown));
     }
 
-    private IEnumerator BeginTurn(float cooldown)
+    private IEnumerator BeginTurn(float cooldown, System.Action onCooldownElapsed = null)
     {
         yield return new WaitForSeconds(cooldown);
+        onCooldownElapsed?.Invoke();
+        _onCountdownStartedChannel?.Raise();
         _countdownSequence.PlayCountdown(3);
     }
 
@@ -136,11 +157,15 @@ public class RoundManager : MonoBehaviour
             _onTurnChangedChannel.Raise(playerIndex);
         }
     }
+    
 
     private void HandleChronoTick(ChronoTrack track, float elapsedTime)
     {
         ChronoVisibilityState visibilityState = _currentVisibility.Evaluate(elapsedTime, _currentTargetTimeVariable.Value);
         track.UpdateDisplayState(elapsedTime, visibilityState.alpha, _currentTargetTimeVariable.Value);
+
+        if (_autoEliminateOnExceedTarget && elapsedTime > _currentTargetTimeVariable.Value)
+            track.Chronometer.StopChrono();
     }
 
     private void HandleChronoStopped(ChronoTrack track, float stoppedTime)
@@ -165,9 +190,9 @@ public class RoundManager : MonoBehaviour
                 StopCoroutine(_countdownSequenceCoroutine);
                 _countdownSequenceCoroutine = null;
             }
-            _countdownSequenceCoroutine = StartCoroutine(BeginTurn(_timeBetweenRounds));
+            _countdownSequenceCoroutine = StartCoroutine(BeginTurn(_useCooldownBetweenRounds ? _timeBetweenRounds : 0f));
         }
-            
+
     }
 
     private bool IsAnyOtherTrackRunning(ChronoTrack excludedTrack)
@@ -190,12 +215,13 @@ public class RoundManager : MonoBehaviour
 
         _onRoundCompletedChannel.Raise(_currentRoundIndex);
 
-
         _currentRoundIndex++;
-        _currentRoundIndexVariable.Value = _currentRoundIndex;
 
-        if (_currentRoundIndex < _roundConfigsByIndex.Count)
-            BeginRound(_timeBetweenRounds);
+        bool hasRemainingRounds = _currentRoundIndex < _roundConfigsByIndex.Count;
+        bool isGameOver = _isGameOverPredicate != null && _isGameOverPredicate();
+
+        if (hasRemainingRounds && !isGameOver)
+            BeginRound(_useCooldownBetweenRounds ? _timeBetweenRounds : 0f);
         else
             _onGameCompletedChannel?.Raise();
     }

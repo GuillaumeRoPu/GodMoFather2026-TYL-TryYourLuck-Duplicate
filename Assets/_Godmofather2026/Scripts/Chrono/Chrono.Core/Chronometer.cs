@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class Chronometer : MonoBehaviour
 {
+    public event Action OnStarted;
     public event Action<float> OnTick;
     public event Action<float> OnStopped;
+
+    public event Action<float> OnResume;
 
     [ShowNativeProperty] public float ElapsedTime { get; private set; }
     [ShowNativeProperty] public bool IsRunning { get; private set; }
@@ -14,11 +17,13 @@ public class Chronometer : MonoBehaviour
     {
         ElapsedTime = 0f;
         IsRunning = true;
+        OnStarted?.Invoke();
     }
 
     public void ResumeChrono()
     {
         IsRunning = true;
+        OnResume?.Invoke(ElapsedTime);
     }
 
     public void StopChrono()

@@ -936,7 +936,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Manche 1
+  m_text: '1
 
 '
   m_isRightToLeft: 0
@@ -965,7 +965,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25.55
+  m_fontSize: 72
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1117,6 +1117,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2063322797}
   - {fileID: 1542382132}
   - {fileID: 1807430126}
   - {fileID: 1540994553}
@@ -1151,6 +1152,7 @@ MonoBehaviour:
       Value: {fileID: 11400000, guid: 76a6b86a2f9598c40930509ae427b53e, type: 2}
     - Key: 2
       Value: {fileID: 11400000, guid: e19267c58ccf081449422aa4dddcd889, type: 2}
+  _timeBetweenRounds: 3
   _onChronoStoppedChannel: {fileID: 11400000, guid: f93c832e7268bb547888a8553bb932f9, type: 2}
   _onRoundOutcomeChannel: {fileID: 11400000, guid: df219c8d0f3757445b2c9ac436fe6d34, type: 2}
   _onRoundCompletedChannel: {fileID: 11400000, guid: dd6737da572889e42ab40c2ab406cdb7, type: 2}
@@ -1160,6 +1162,7 @@ MonoBehaviour:
   _onCountdownFinishedChannel: {fileID: 11400000, guid: e4ec847c9639f044285536d8320235ed, type: 2}
   _currentRoundIndexVariable: {fileID: 11400000, guid: baff559e1ff313e4ca81d3ed61dd62ab, type: 2}
   _currentTargetTimeVariable: {fileID: 11400000, guid: 326436c1adf2ec54da6bbda753e6a92b, type: 2}
+  _roundCountVariable: {fileID: 11400000, guid: 97fe6d96d51cd2d6d833f6fadebbe385, type: 2}
   _currentRoundIndex: 0
 --- !u!114 &1533293600
 MonoBehaviour:
@@ -1176,6 +1179,7 @@ MonoBehaviour:
   _roundManager: {fileID: 1533293599}
   _playerOneTrack: {fileID: 489124972}
   _playerTwoTrack: {fileID: 998230287}
+  _onRoundOutcomeAnnouncedChannel: {fileID: 11400000, guid: c4dd5194ce582407eadb2deb87531365, type: 2}
   _playerOneDelta: 3.4028235e+38
   _playerTwoDelta: 3.4028235e+38
   _roundWinnerPlayerIndex: -1
@@ -1376,8 +1380,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -0.0000076293945, y: -102.604}
-  m_SizeDelta: {x: 701.614, y: 170.596}
+  m_AnchoredPosition: {x: 0.974, y: -152.66}
+  m_SizeDelta: {x: 699.667, y: 70.476}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1542382133
 MonoBehaviour:
@@ -1426,7 +1430,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 152.7
+  m_fontSize: 63.05
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1611,6 +1615,7 @@ GameObject:
   - component: {fileID: 1738098798}
   - component: {fileID: 1738098800}
   - component: {fileID: 1738098799}
+  - component: {fileID: 1738098900}
   - component: {fileID: 1738098797}
   - component: {fileID: 1738098796}
   m_Layer: 5
@@ -1749,6 +1754,34 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &1738098900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738098794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca7642f0643e6ce4c8f23befe2229c3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IntVariableListener
+  _variable: {fileID: 11400000, guid: baff559e1ff313e4ca81d3ed61dd62ab, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1738098798}
+        m_TargetAssemblyTypeName: RoundIndicatorView, Assembly-CSharp
+        m_MethodName: SetRoundIndex
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1807430122
 GameObject:
   m_ObjectHideFlags: 0
@@ -1763,6 +1796,7 @@ GameObject:
   - component: {fileID: 1807430127}
   - component: {fileID: 1807430125}
   - component: {fileID: 1807430124}
+  - component: {fileID: 1807430200}
   m_Layer: 5
   m_Name: Countdown
   m_TagString: Untagged
@@ -1943,6 +1977,39 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &1807430200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807430122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ddc6fe7945f4cf78a3a40d757cf2e6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoidGameEventListener
+  Event: {fileID: 11400000, guid: e4ec847c9639f044285536d8320235ed, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1807430127}
+        m_TargetAssemblyTypeName: CountdownView, Assembly-CSharp
+        m_MethodName: OnCountdownFinished
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!224 &2063322797 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+  m_PrefabInstance: {fileID: 6287326730529029818}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2096431171
 GameObject:
   m_ObjectHideFlags: 0
@@ -2168,6 +2235,103 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1001 &6287326730529029818
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1533293598}
+    m_Modifications:
+    - target: {fileID: 1987408720692899787, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_Name
+      value: RoundPanels
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -1220.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: -961.23
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.9738159
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 480.61
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8891779971297175293, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 11d89f4b84c580047a0e94522b9a1693, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

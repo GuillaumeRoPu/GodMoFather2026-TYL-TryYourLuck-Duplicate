@@ -12,6 +12,9 @@ public class ChronoTurnBasedGameController : MonoBehaviour
     [BoxGroup("Regles")]
     [SerializeField] private int _playerCount = 2;
 
+    [BoxGroup("Channels"), Required]
+    [SerializeField] private RoundOutcomeDataGameEvent _onRoundOutcomeAnnouncedChannel;
+
     [BoxGroup("Debug"), ReadOnly]
     [SerializeField] private int _roundsWonByPlayerOne;
 
@@ -23,8 +26,13 @@ public class ChronoTurnBasedGameController : MonoBehaviour
     private void Start()
     {
         ChronoTrack[] chronoTracks = { _sharedTrack };
-        _roundManager.Initialize(new DoNotExceedRule(), new AlternatingTurnProvider(_playerCount), chronoTracks);
+        _roundManager.Initialize(new DoNotExceedRule(), new AlternatingTurnProvider(_playerCount), chronoTracks, autoEliminateOnExceedTarget: true, useCooldownBetweenRounds: false, IsGameOver);
         _roundManager.StartGame();
+    }
+
+    private bool IsGameOver()
+    {
+        return _roundsWonByPlayerOne >= 2 || _roundsWonByPlayerTwo >= 2;
     }
 
     private void OnDestroy()
@@ -48,6 +56,8 @@ public class ChronoTurnBasedGameController : MonoBehaviour
     public void HandleRoundCompleted(int roundIndex)
     {
         Debug.Log($"[ChronoTurnBased] Manche {roundIndex + 1} terminee : Joueur {_lastRoundWinnerPlayerIndex + 1} gagne la manche.");
+
+        _onRoundOutcomeAnnouncedChannel.Raise(new RoundOutcomeData(roundIndex, _lastRoundWinnerPlayerIndex, isTie: false));
     }
 
     public void HandleGameCompleted()

@@ -12,6 +12,9 @@ public class ChronoClosestGameController : MonoBehaviour
     [BoxGroup("References"), Required]
     [SerializeField] private ChronoTrack _playerTwoTrack;
 
+    [BoxGroup("Channels"), Required]
+    [SerializeField] private RoundOutcomeDataGameEvent _onRoundOutcomeAnnouncedChannel;
+
     [BoxGroup("Debug"), ReadOnly]
     [SerializeField] private float _playerOneDelta = float.MaxValue;
 
@@ -30,9 +33,14 @@ public class ChronoClosestGameController : MonoBehaviour
     private void Start()
     {
         ChronoTrack[] chronoTracks = { _playerOneTrack, _playerTwoTrack };
-        _roundManager.Initialize(new ClosestToTargetRule(), new SinglePlayerTurnProvider(chronoTracks.Length), chronoTracks);
+        _roundManager.Initialize(new ClosestToTargetRule(), new SinglePlayerTurnProvider(chronoTracks.Length), chronoTracks, autoEliminateOnExceedTarget: false, useCooldownBetweenRounds: true, IsGameOver);
 
         _roundManager.StartGame();
+    }
+
+    private bool IsGameOver()
+    {
+        return _roundsWonByPlayerOne >= 2 || _roundsWonByPlayerTwo >= 2;
     }
 
     private void OnDestroy()
@@ -50,14 +58,22 @@ public class ChronoClosestGameController : MonoBehaviour
 
     public void HandleRoundCompleted(int roundIndex)
     {
-        _roundWinnerPlayerIndex = _playerOneDelta <= _playerTwoDelta ? 0 : 1;
+        bool isRoundTied = Mathf.Approximately(_playerOneDelta, _playerTwoDelta);
+        _roundWinnerPlayerIndex = isRoundTied ? -1 : (_playerOneDelta < _playerTwoDelta ? 0 : 1);
 
-        if (_roundWinnerPlayerIndex == 0)
-            _roundsWonByPlayerOne++;
+        if (isRoundTied)
+            Debug.Log($"[ChronoClosest] Manche {roundIndex + 1} terminee : egalite (delta P1: {_playerOneDelta:F3}s, delta P2: {_playerTwoDelta:F3}s).");
         else
-            _roundsWonByPlayerTwo++;
+        {
+            if (_roundWinnerPlayerIndex == 0)
+                _roundsWonByPlayerOne++;
+            else
+                _roundsWonByPlayerTwo++;
 
-        Debug.Log($"[ChronoClosest] Manche {roundIndex + 1} terminee : Joueur {_roundWinnerPlayerIndex + 1} gagne la manche (delta P1: {_playerOneDelta:F3}s, delta P2: {_playerTwoDelta:F3}s).");
+            Debug.Log($"[ChronoClosest] Manche {roundIndex + 1} terminee : Joueur {_roundWinnerPlayerIndex + 1} gagne la manche (delta P1: {_playerOneDelta:F3}s, delta P2: {_playerTwoDelta:F3}s).");
+        }
+
+        _onRoundOutcomeAnnouncedChannel.Raise(new RoundOutcomeData(roundIndex, _roundWinnerPlayerIndex, isRoundTied));
 
         _playerOneDelta = float.MaxValue;
         _playerTwoDelta = float.MaxValue;
