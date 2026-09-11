@@ -364,7 +364,7 @@ MonoBehaviour:
   _additionalRotation10: -36
   _additionalRotation15: -34.596
   _balloonAnims: {fileID: 140887280}
-  _minMaxNumber: {x: 2, y: 5}
+  _minMaxNumber: {x: 10, y: 40}
   _space: {fileID: 350970848847641330, guid: f913651f191296545901ed4d5ee7f10f, type: 3}
   _spinTime: 4.5
   _respinTime: 0.5

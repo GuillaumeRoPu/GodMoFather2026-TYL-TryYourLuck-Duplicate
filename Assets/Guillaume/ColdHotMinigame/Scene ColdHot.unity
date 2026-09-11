@@ -1934,7 +1934,7 @@ MonoBehaviour:
   _switchPlayersUI: {fileID: 554579705}
   _inputNumberField: {fileID: 1311205683}
   _textBoardPlusMinus: {fileID: 799143212}
-  _minMaxNumber: {x: 0, y: 1}
+  _minMaxNumber: {x: 0, y: 100}
   _enter: {fileID: 350970848847641330, guid: 5711fef726010d64a838a6e3c04b33d3, type: 3}
   _maxTimerAnwser: 2
   _maxTimerWinRound: 3
