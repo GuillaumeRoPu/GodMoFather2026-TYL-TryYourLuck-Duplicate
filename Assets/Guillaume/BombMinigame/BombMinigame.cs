@@ -1,16 +1,19 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class BombMinigame : MonoBehaviour
 {
-    [SerializeField] private GameObject _roundCell; //Prefab for the round ui
-    [SerializeField] private Transform _roundCellsParent; //Grid layout parent to display the rounds
-    private GameObject[] _roundCellsList; //List of all the round objects used as ui in the grid layout above
-    [SerializeField] private TMP_Text _infoText; //Text to display information of the game
+    [SerializeField] private GameObject _round1Cell; //UI for rounds
+    [SerializeField] private GameObject _round2Cell; //UI for rounds
+    [SerializeField] private GameObject _round3Cell; //UI for rounds
+    [SerializeField] private PlayerSwitch _switchPlayersUI; //UI to switch between player 1 and player 2
+    [SerializeField] private CurtainOpenClose _openCloseCurtainsUI; //UI to open and close curtains
     [SerializeField] private GameObject _wheel; //Wheel object
-    [SerializeField] private GameObject _balloon; //balloon object
+    [SerializeField] private float _additionalRotation;
+    [SerializeField] private BalloonAnims _balloonAnims;
     [SerializeField] private Vector2 _minMaxNumber; //Min and max numbers for the random number chosen
     [SerializeField] private InputActionReference _space; //Enter input for the input field
     private int _randomNumberResult; //Random number chosen at the start of the game
@@ -30,6 +33,13 @@ public class BombMinigame : MonoBehaviour
     [SerializeField] private int[] _spinOptions; //Array that keeps track of the number of the wheel
     private int _roundsToWin; //Number of rounds a player needs to win to win
 
+    [SerializeField] private UnityEvent _gameStarted;
+    [SerializeField] private UnityEvent _startSpin;
+    [SerializeField] private UnityEvent _stopSpin;
+    [SerializeField] private UnityEvent _roundWon;
+    [SerializeField] private UnityEvent _gameWon;
+    [SerializeField] private UnityEvent _gameEnded;
+
     private enum GameStateBalloon
     {
         Start,
@@ -39,6 +49,7 @@ public class BombMinigame : MonoBehaviour
         PumpingBalloon,
         WaitingForNewRound,
         Ended,
+        CloseCurtains,
     }
 
     private GameStateBalloon _gameState;
@@ -54,11 +65,7 @@ public class BombMinigame : MonoBehaviour
         _space.action.started += RedeemAnswerInput;
         _round = 0;
         _roundsToWin = numberOfRoundsToWin;
-        _roundCellsList = new GameObject[_roundsToWin * 2 - 1];
-        for (int i = 0; i < _roundsToWin * 2 - 1; i++)
-        {
-            _roundCellsList[i] = Instantiate(_roundCell, _roundCellsParent);
-        }
+        _gameStarted.Invoke();
         StartNewRound();
     }
 
@@ -68,18 +75,18 @@ public class BombMinigame : MonoBehaviour
         if (_round % 2 == 0)
         {
             _player1Turn = false;
-            SetInfoText("2nd Player spins");
+            _switchPlayersUI.AnimSwitch(false);
         }
         else
         {
             _player1Turn = true;
-            SetInfoText("1st Player spins");
+            _switchPlayersUI.AnimSwitch(true);
         }
         _gameState = GameStateBalloon.Start;
         _timer = 0;
         _totalNumberOfPumps = 0;
         _goalNumberOfPumps = 0;
-        _balloon.transform.localScale = new Vector3(1,1,1);
+        _balloonAnims.Base();
     }
 
     private void EndGame()
@@ -88,11 +95,7 @@ public class BombMinigame : MonoBehaviour
         _space.action.Disable();
         _roundsToWin = 0;
         _round = 0;
-        foreach (GameObject obj in _roundCellsList)
-        {
-            Destroy(obj);
-        }
-        _roundCellsList = null;
+        _gameEnded.Invoke();
     }
 
     private void Update()
@@ -109,7 +112,7 @@ public class BombMinigame : MonoBehaviour
             case GameStateBalloon.Spinning:
                 _timer += Time.deltaTime;
                 _wheel.transform.rotation = Quaternion.Euler(0,0,0);
-                _wheel.transform.Rotate(new Vector3(0,0, _spinCurve.Evaluate(_timer / _spinTime) * (_spinRotation + 90)));
+                _wheel.transform.Rotate(new Vector3(0,0, _spinCurve.Evaluate(_timer / _spinTime) * (_spinRotation + 90 + _additionalRotation)));
                 if (_timer > _spinTime)
                 {
                     _timer = 0;
@@ -119,8 +122,8 @@ public class BombMinigame : MonoBehaviour
             case GameStateBalloon.RespinToMiddle:
                 _timer += Time.deltaTime;
                 _wheel.transform.rotation = Quaternion.Euler(0, 0, 0);
-                float recalculatedAngle = (((_spinResult * 360) / _spinOptions.Length) + ((0.5f * 360) / _spinOptions.Length)) + 90 + 1800;
-                _wheel.transform.Rotate(new Vector3(0, 0, Mathf.Lerp(_spinRotation + 90, recalculatedAngle, _spinCurve.Evaluate(_timer / _respinTime))));
+                float recalculatedAngle = (((_spinResult * 360) / _spinOptions.Length) + ((0.5f * 360) / _spinOptions.Length)) + 90 + _additionalRotation + 1800;
+                _wheel.transform.Rotate(new Vector3(0, 0, Mathf.Lerp(_spinRotation + 90 + _additionalRotation, recalculatedAngle, _spinCurve.Evaluate(_timer / _respinTime))));
                 if (_timer > _respinTime)
                 {
                     _timer = 0;
@@ -138,22 +141,30 @@ public class BombMinigame : MonoBehaviour
                     _player1Turn = !_player1Turn;
                     if (_player1Turn)
                     {
-                        SetInfoText("Player 1 spins");
+                        //SetInfoText("Player 1 spins");
                     }
                     else
                     {
-                        SetInfoText("Player 2 spins");
+                        //SetInfoText("Player 2 spins");
                     }
                     StartNewRound();
                 }
                 break;
             case GameStateBalloon.Ended:
-                _timer += Time.deltaTime * 0.3f;
-                if (_timer >= 1)
+                _timer += Time.deltaTime;
+                if (_timer >= 3)
                 {
-                    _timer -= 1;
-                    Debug.Log("true");
+                    _timer = 0;
+                    ChangeGameState(GameStateBalloon.CloseCurtains);
+                    _openCloseCurtainsUI.PullDown();
                     break;
+                }
+                break;
+            case GameStateBalloon.CloseCurtains:
+                _timer += Time.deltaTime;
+                if (_timer >= 3)
+                {
+                    EndGame();
                 }
                 break;
             default:
@@ -177,7 +188,7 @@ public class BombMinigame : MonoBehaviour
         if (_gameState == GameStateBalloon.WaitingForSpin)
         {
             _timer = 0;
-            SetInfoText("");
+            //SetInfoText("");
             _spinRotation = Random.Range(0, 360);
             for (int i = 0; i < _spinOptions.Length; i++)
             {
@@ -197,24 +208,47 @@ public class BombMinigame : MonoBehaviour
             _timer = 0;
             if (_totalNumberOfPumps >= _randomNumberResult)
             {
+                _balloonAnims.BlowUp();
                 if (_player1Turn)
                 {
-                    _roundCellsList[_round - 1].GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    if (_round == 1)
+                    {
+                        _round1Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
+                    else if (_round == 2)
+                    {
+                        _round2Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
+                    else
+                    {
+                        _round3Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
                 }
                 else
                 {
                     _player1Points++;
-                    _roundCellsList[_round - 1].GetComponent<Image>().color = new Color(0, 180, 255, 1);
+                    if (_round == 1)
+                    {
+                        _round1Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
+                    else if (_round == 2)
+                    {
+                        _round2Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
+                    else
+                    {
+                        _round3Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
                 }
                 if (_player1Points < _roundsToWin && _roundsToWin > _round - _player1Points)
                 {
                     if (_player1Turn)
                     {
-                        SetInfoText("PLAYER 2 WON THE ROUND !");
+                        //SetInfoText("PLAYER 2 WON THE ROUND !");
                     }
                     else
                     {
-                        SetInfoText("PLAYER 1 WON THE ROUND !");
+                        //SetInfoText("PLAYER 1 WON THE ROUND !");
                     }
                     ChangeGameState(GameStateBalloon.WaitingForNewRound);
                 }
@@ -223,11 +257,11 @@ public class BombMinigame : MonoBehaviour
                     Debug.Log("Went there, done that");
                     if (_player1Points >= _roundsToWin)
                     {
-                        SetInfoText("PLAYER 1 WON !!!!");
+                        //SetInfoText("PLAYER 1 WON !!!!");
                     }
                     else
                     {
-                        SetInfoText("PLAYER 2 WON !!!!");
+                        //SetInfoText("PLAYER 2 WON !!!!");
                     }
                     ChangeGameState(GameStateBalloon.Ended);
                 }
@@ -235,7 +269,7 @@ public class BombMinigame : MonoBehaviour
             else
             {
                 _totalNumberOfPumps++;
-                _balloon.transform.localScale = new Vector3(_balloon.transform.localScale.x + 0.2f, _balloon.transform.localScale.y + 0.2f, _balloon.transform.localScale.z);
+                _balloonAnims.Pump();
                 if (_totalNumberOfPumps >= _goalNumberOfPumps)
                 {
                     Debug.Log("Went here");
@@ -243,11 +277,13 @@ public class BombMinigame : MonoBehaviour
                     _player1Turn = !_player1Turn;
                     if (_player1Turn)
                     {
-                        SetInfoText("Player 1 spins");
+                        //SetInfoText("Player 1 spins");
+                        _switchPlayersUI.AnimSwitch(false);
                     }
                     else
                     {
-                        SetInfoText("Player 2 spins");
+                        //SetInfoText("Player 2 spins");
+                        _switchPlayersUI.AnimSwitch(true);
                     }
                     ChangeGameState(GameStateBalloon.WaitingForSpin);
                 }
@@ -261,7 +297,7 @@ public class BombMinigame : MonoBehaviour
                         {
                             text = "Player 1 PUMPS " + pumpsLeft + " TIME !";
                         }
-                        SetInfoText(text);
+                        //SetInfoText(text);
                     }
                     else
                     {
@@ -270,17 +306,13 @@ public class BombMinigame : MonoBehaviour
                         {
                             text = "Player 2 PUMPS " + pumpsLeft + " TIME !";
                         }
-                        SetInfoText(text);
+                        //SetInfoText(text);
                     }
                 }
             }
         }
     }
 
-    private void SetInfoText(string text)
-    {
-        _infoText.text = text;
-    }
 
     private void ChangeGameState(GameStateBalloon state)
     {
@@ -298,7 +330,7 @@ public class BombMinigame : MonoBehaviour
                 {
                     text = "Player 1 PUMPS " + _spinOptions[_spinResult] + " TIME !";
                 }
-                SetInfoText(text);
+                //SetInfoText(text);
             }
             else
             {
@@ -307,7 +339,7 @@ public class BombMinigame : MonoBehaviour
                 {
                     text = "Player 2 PUMPS " + _spinOptions[_spinResult] + " TIME !";
                 }
-                SetInfoText(text);
+                //SetInfoText(text);
             }
         }
     }

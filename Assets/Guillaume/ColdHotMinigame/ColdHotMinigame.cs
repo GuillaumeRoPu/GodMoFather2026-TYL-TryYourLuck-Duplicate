@@ -1,18 +1,18 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class ColdHotMinigame : MonoBehaviour
 {
-    [SerializeField] private GameObject _roundCell; //Prefab for the round ui
-    [SerializeField] private Transform _roundCellsParent; //Grid layout parent to display the rounds
-    private GameObject[] _roundCellsList; //List of all the round objects used as ui in the grid layout above
+    [SerializeField] private GameObject _round1Cell; //UI for rounds
+    [SerializeField] private GameObject _round2Cell; //UI for rounds
+    [SerializeField] private GameObject _round3Cell; //UI for rounds
+    [SerializeField] private PlayerSwitch _switchPlayersUI; //UI to switch between player 1 and player 2
+    [SerializeField] private CurtainOpenClose _openCloseCurtainsUI; //UI to open and close curtains
     [SerializeField] private TMP_InputField _inputNumberField; //Input Field for the players to answer their number
-    [SerializeField] private Image _downArrow; //image for down arrow
-    [SerializeField] private Image _upArrow; //image for up arrow
-    [SerializeField] private TMP_Text _numberResultText; //Text to display the number at the end of the game
-    [SerializeField] private TMP_Text _infoText; //Text to display information of the game
+    [SerializeField] private TMP_Text _textBoardPlusMinus; //Text board to display info
     [SerializeField] private Vector2 _minMaxNumber; //Min and max numbers for the random number chosen
     [SerializeField] private InputActionReference _enter; //Enter input for the input field
     private int _randomNumberResult; //Random number chosen at the start of the game
@@ -22,7 +22,13 @@ public class ColdHotMinigame : MonoBehaviour
     private int _player1Points; //Current number of rounds won for player 1
     [SerializeField] private float _maxTimerAnwser; //max number for the timer. If timer goes beyong it goes on to the next state (here from answered to waitingforanswer)
     [SerializeField] private float _maxTimerWinRound; //max number for the timer. If timer goes beyong it goes on to the next state (here from answered to waitingfornextround)
-     private int _roundsToWin; //Number of rounds a player needs to win to win
+    private int _roundsToWin; //Number of rounds a player needs to win to win
+
+    [SerializeField] private UnityEvent _gameStarted;
+    [SerializeField] private UnityEvent _redeemedAnswer;
+    [SerializeField] private UnityEvent _roundWon;
+    [SerializeField] private UnityEvent _gameWon;
+    [SerializeField] private UnityEvent _gameEnded;
 
     private enum GameStateCH
     {
@@ -31,6 +37,7 @@ public class ColdHotMinigame : MonoBehaviour
         Answered,
         WaitingForNewRound,
         Ended,
+        CloseCurtains,
     }
 
     private GameStateCH _gameState;
@@ -46,34 +53,26 @@ public class ColdHotMinigame : MonoBehaviour
         _enter.action.started += RedeemAnswerInput;
         _round = 0;
         _roundsToWin = numberOfRoundsToWin;
-        _roundCellsList = new GameObject[_roundsToWin * 2 - 1];
-        Debug.Log(_roundCellsList.Length);
-        for (int i = 0; i < _roundsToWin * 2 - 1; i++)
-        {
-            _roundCellsList[i] = Instantiate(_roundCell, _roundCellsParent);
-        }
+        _gameStarted.Invoke();
         StartNewRound();
     }
 
     private void StartNewRound()
     {
         _round += 1;
-        _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-        _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-        _numberResultText.color = Color.HSVToRGB(0, 0, 0);
+        _textBoardPlusMinus.text = "Round " + _round;
         if (_round % 2 == 0)
         {
             _player1Turn = false;
-            SetInfoText("2nd Player can choose a number to answer");
+            _switchPlayersUI.AnimSwitch(false);
         }
-        else
+        else if (_round != 1)
         {
             _player1Turn = true;
-            SetInfoText("1st Player can choose a number to answer");
+            _switchPlayersUI.AnimSwitch(true);
         }
         _gameState = GameStateCH.Start;
         _timer = 0;
-        _numberResultText.text = "?";
     }
 
     private void EndGame()
@@ -82,11 +81,7 @@ public class ColdHotMinigame : MonoBehaviour
         _enter.action.Disable();
         _roundsToWin = 0;
         _round = 0;
-        foreach (GameObject obj in _roundCellsList)
-        {
-            Destroy(obj);
-        }
-        _roundCellsList = null;
+        _gameEnded.Invoke();
     }
 
     private void Update()
@@ -106,16 +101,15 @@ public class ColdHotMinigame : MonoBehaviour
                 {
                     _timer = 0;
                     _player1Turn = !_player1Turn;
-                    _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
                     if (_player1Turn)
                     {
-                        SetInfoText("1st Player can choose a number to answer");
+                        _switchPlayersUI.AnimSwitch(true);
                     }
                     else
                     {
-                        SetInfoText("2nd Player can choose a number to answer");
+                        _switchPlayersUI.AnimSwitch(false);
                     }
+                    _textBoardPlusMinus.text = "";
                     ChangeGameState(GameStateCH.WaitingForAnswer);
                     Debug.Log(_round);
                 }
@@ -125,29 +119,26 @@ public class ColdHotMinigame : MonoBehaviour
                 if (_timer > _maxTimerWinRound)
                 {
                     _timer = 0;
-                    _player1Turn = !_player1Turn;
-                    _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 0);
-                    if (_player1Turn)
-                    {
-                        SetInfoText("1st Player can choose a number to answer");
-                    }
-                    else
-                    {
-                        SetInfoText("2nd Player can choose a number to answer");
-                    }
+                    _textBoardPlusMinus.text = "";
                     StartNewRound();
                 }
                 break;
             case GameStateCH.Ended:
-                _timer += Time.deltaTime * 0.3f;
-                if (_timer >= 1)
+                _timer += Time.deltaTime;
+                if (_timer >= 3)
                 {
-                    _timer -= 1;
-                    Debug.Log("true");
+                    _timer = 0;
+                    ChangeGameState(GameStateCH.CloseCurtains);
+                    _openCloseCurtainsUI.PullDown();
                     break;
                 }
-                _numberResultText.color = Color.HSVToRGB(_timer, 1, 1);
+                break;
+            case GameStateCH.CloseCurtains:
+                _timer += Time.deltaTime;
+                if (_timer >= 3)
+                {
+                    EndGame();
+                }
                 break;
             default:
                 Debug.LogError("default activated in switch");
@@ -169,52 +160,76 @@ public class ColdHotMinigame : MonoBehaviour
     {
         if (_gameState == GameStateCH.WaitingForAnswer)
         {
+            _redeemedAnswer.Invoke();
             int answer;
             if (!int.TryParse(_inputNumberField.text, out answer))
             {
-                SetInfoText("Your answer isn't a whole number");
                 ClearInputField();
                 return;
             }
             answer = int.Parse(_inputNumberField.text);
             if (answer < _minMaxNumber.x || answer > _minMaxNumber.y)
             {
-                SetInfoText("You didn't answer a correct number");
+                ClearInputField();
             }
             else if (answer > _randomNumberResult)
             {
-                SetInfoText("The number is lower");
                 ChangeGameState(GameStateCH.Answered);
-                _downArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 1);
+                _textBoardPlusMinus.text = "-";
             }
             else if (answer < _randomNumberResult)
             {
                 SetInfoText("The number is higher");
                 ChangeGameState(GameStateCH.Answered);
-                _upArrow.color = new Color(_downArrow.color.r, _downArrow.color.g, _downArrow.color.b, 1);
+                _textBoardPlusMinus.text = "+";
             }
             else if (answer == _randomNumberResult)
             {
                 if (_player1Turn)
                 {
                     _player1Points++;
-                    _roundCellsList[_round - 1].GetComponent<Image>().color = new Color(0, 180, 255, 1);
+                    if (_round == 1)
+                    {
+                        _round1Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
+                    else if (_round == 2)
+                    {
+                        _round2Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
+                    else
+                    {
+                        _round3Cell.GetComponent<Image>().color = new Color(0, 0, 255, 1);
+                    }
                 }
                 else
                 {
-                    _roundCellsList[_round - 1].GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    if (_round == 1)
+                    {
+                        _round1Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
+                    else if (_round == 2)
+                    {
+                        _round2Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
+                    else
+                    {
+                        _round3Cell.GetComponent<Image>().color = new Color(255, 0, 0, 1);
+                    }
                 }
                 if (_player1Points < _roundsToWin && _roundsToWin > _round - _player1Points)
                 {
                     if (_player1Turn)
                     {
-                        SetInfoText("PLAYER 1 WON THE ROUND !");
+                        //SetInfoText("PLAYER 1 WON THE ROUND !");
+                        _textBoardPlusMinus.text = "P1 WON ROUND";
                     }
                     else
                     {
-                        SetInfoText("PLAYER 2 WON THE ROUND !");
+                        //SetInfoText("PLAYER 2 WON THE ROUND !");
+                        _textBoardPlusMinus.text = "P2 WON ROUND";
                     }
-                    _numberResultText.text = _randomNumberResult.ToString();
+                    //_numberResultText.text = _randomNumberResult.ToString();
+                    _roundWon.Invoke();
                     ChangeGameState(GameStateCH.WaitingForNewRound);
                 }
                 else
@@ -222,13 +237,16 @@ public class ColdHotMinigame : MonoBehaviour
                     Debug.Log("Went there, done that");
                     if (_player1Points >= _roundsToWin)
                     {
-                        SetInfoText("PLAYER 1 WON !!!!");
+                        //SetInfoText("PLAYER 1 WON !!!!");
+                        _textBoardPlusMinus.text = "P1 WON !";
                     }
                     else
                     {
-                        SetInfoText("PLAYER 2 WON !!!!");
+                        //SetInfoText("PLAYER 2 WON !!!!");
+                        _textBoardPlusMinus.text = "P2 WON !";
                     }
-                    _numberResultText.text = _randomNumberResult.ToString();
+                    //_numberResultText.text = _randomNumberResult.ToString();
+                    _gameWon.Invoke();
                     ChangeGameState(GameStateCH.Ended);
                 }
             }
@@ -243,7 +261,7 @@ public class ColdHotMinigame : MonoBehaviour
 
     private void SetInfoText(string text)
     {
-        _infoText.text = text;
+        //_infoText.text = text;
     }
 
     private void ChangeGameState(GameStateCH state)
