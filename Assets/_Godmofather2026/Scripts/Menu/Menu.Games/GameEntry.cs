@@ -4,16 +4,16 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Game Entry", menuName = "Menu/Game Entry")]
 public class GameEntry : ScriptableObject
 {
-    [BoxGroup("Identification"), Required]
+    [BoxGroup("Identification")]
     [SerializeField] private string _gameId;
 
-    [BoxGroup("Identification"), Required]
+    [BoxGroup("Identification")]
     [SerializeField] private string _displayName;
 
     [BoxGroup("Presentation"), Required]
     [SerializeField] private Sprite _icon;
 
-    [BoxGroup("Chargement"), Required]
+    [BoxGroup("Chargement")]
     [ValidateInput("IsSceneNameValid", "Cette scene doit etre ajoutee aux Build Settings")]
     [SerializeField] private string _sceneName;
 
