@@ -15,6 +15,9 @@ public class ChronoClosestGameController : MonoBehaviour
     [BoxGroup("Channels"), Required]
     [SerializeField] private RoundOutcomeDataGameEvent _onRoundOutcomeAnnouncedChannel;
 
+    [BoxGroup("Channels"), Required]
+    [SerializeField] private IntGameEvent _onGameWinnerDeterminedChannel;
+
     [BoxGroup("Debug"), ReadOnly]
     [SerializeField] private float _playerOneDelta = float.MaxValue;
 
@@ -35,7 +38,7 @@ public class ChronoClosestGameController : MonoBehaviour
         ChronoTrack[] chronoTracks = { _playerOneTrack, _playerTwoTrack };
         _roundManager.Initialize(new ClosestToTargetRule(), new SinglePlayerTurnProvider(chronoTracks.Length), chronoTracks, autoEliminateOnExceedTarget: false, useCooldownBetweenRounds: true, IsGameOver);
 
-        _roundManager.StartGame();
+        // _roundManager.StartGame();
     }
 
     private bool IsGameOver()
@@ -83,5 +86,7 @@ public class ChronoClosestGameController : MonoBehaviour
     {
         int gameWinnerPlayerIndex = _roundsWonByPlayerOne >= _roundsWonByPlayerTwo ? 0 : 1;
         Debug.Log($"[ChronoClosest] Fin de la partie (BO3) : Joueur {gameWinnerPlayerIndex + 1} remporte le jeu ({_roundsWonByPlayerOne} - {_roundsWonByPlayerTwo}).");
+
+        _onGameWinnerDeterminedChannel.Raise(gameWinnerPlayerIndex);
     }
 }

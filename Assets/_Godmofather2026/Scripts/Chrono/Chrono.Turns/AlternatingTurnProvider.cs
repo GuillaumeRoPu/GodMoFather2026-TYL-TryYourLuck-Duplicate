@@ -16,7 +16,6 @@ public class AlternatingTurnProvider : ITurnProvider
 
     public void BeginRound()
     {
-        CurrentPlayerIndex = 0;
         _isRoundComplete = false;
     }
 
@@ -32,12 +31,10 @@ public class AlternatingTurnProvider : ITurnProvider
 
     public void NotifyTrackStopped(int trackIndex, RoundOutcome outcome)
     {
-        if (!outcome.success)
-        {
-            _isRoundComplete = true;
-            return;
-        }
         CurrentPlayerIndex = (CurrentPlayerIndex + 1) % _playerCount;
+
+        if (!outcome.success)
+            _isRoundComplete = true;
     }
 
     public bool IsRoundComplete()
