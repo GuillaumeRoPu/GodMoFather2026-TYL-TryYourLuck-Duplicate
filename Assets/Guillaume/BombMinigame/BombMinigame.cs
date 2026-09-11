@@ -12,7 +12,12 @@ public class BombMinigame : MonoBehaviour
     [SerializeField] private PlayerSwitch _switchPlayersUI; //UI to switch between player 1 and player 2
     [SerializeField] private CurtainOpenClose _openCloseCurtainsUI; //UI to open and close curtains
     [SerializeField] private GameObject _wheel; //Wheel object
-    [SerializeField] private float _additionalRotation;
+    [SerializeField] private Sprite _wheel5Sprite;
+    [SerializeField] private Sprite _wheel10Sprite;
+    [SerializeField] private Sprite _wheel15Sprite;
+    [SerializeField] private float _additionalRotation5;
+    [SerializeField] private float _additionalRotation10;
+    [SerializeField] private float _additionalRotation15;
     [SerializeField] private BalloonAnims _balloonAnims;
     [SerializeField] private Vector2 _minMaxNumber; //Min and max numbers for the random number chosen
     [SerializeField] private InputActionReference _space; //Enter input for the input field
@@ -30,7 +35,10 @@ public class BombMinigame : MonoBehaviour
     private int _spinResult; //Chosen result of the spin for the array _spinOptions
     [SerializeField] private float _timeBetweenPumps; //max number for the timer. If timer goes beyond you can pump again with space
     [SerializeField] private float _timeBetweenRounds; //max number for the timer. If timer goes beyong it goes on to the next state (here for waitingfornextround)
-    [SerializeField] private int[] _spinOptions; //Array that keeps track of the number of the wheel
+    [SerializeField] private int[] _wheel5Options;
+    [SerializeField] private int[] _wheel10Options;
+    [SerializeField] private int[] _wheel15Options;
+    private int[] _spinOptions; //Array that keeps track of the number of the wheel
     private int _roundsToWin; //Number of rounds a player needs to win to win
 
     [SerializeField] private UnityEvent _gameStarted;
@@ -86,6 +94,21 @@ public class BombMinigame : MonoBehaviour
         _timer = 0;
         _totalNumberOfPumps = 0;
         _goalNumberOfPumps = 0;
+        if (_round == 1)
+        {
+            _wheel.GetComponent<Image>().sprite = _wheel5Sprite;
+            _spinOptions = _wheel5Options;
+        }
+        else if (_round == 2)
+        {
+            _wheel.GetComponent<Image>().sprite = _wheel10Sprite;
+            _spinOptions = _wheel10Options;
+        }
+        else
+        {
+            _wheel.GetComponent<Image>().sprite = _wheel15Sprite;
+            _spinOptions = _wheel15Options;
+        }
         _balloonAnims.Base();
     }
 
@@ -111,8 +134,21 @@ public class BombMinigame : MonoBehaviour
                 break;
             case GameStateBalloon.Spinning:
                 _timer += Time.deltaTime;
+                float additionalRotation;
+                if (_round == 1)
+                {
+                    additionalRotation = _additionalRotation5;
+                }
+                else if (_round == 2)
+                {
+                    additionalRotation = _additionalRotation10;
+                }
+                else
+                {
+                    additionalRotation = _additionalRotation15;
+                }
                 _wheel.transform.rotation = Quaternion.Euler(0,0,0);
-                _wheel.transform.Rotate(new Vector3(0,0, _spinCurve.Evaluate(_timer / _spinTime) * (_spinRotation + 90 + _additionalRotation)));
+                _wheel.transform.Rotate(new Vector3(0,0, _spinCurve.Evaluate(_timer / _spinTime) * (_spinRotation + 90 + additionalRotation)));
                 if (_timer > _spinTime)
                 {
                     _timer = 0;
@@ -122,8 +158,21 @@ public class BombMinigame : MonoBehaviour
             case GameStateBalloon.RespinToMiddle:
                 _timer += Time.deltaTime;
                 _wheel.transform.rotation = Quaternion.Euler(0, 0, 0);
-                float recalculatedAngle = (((_spinResult * 360) / _spinOptions.Length) + ((0.5f * 360) / _spinOptions.Length)) + 90 + _additionalRotation + 1800;
-                _wheel.transform.Rotate(new Vector3(0, 0, Mathf.Lerp(_spinRotation + 90 + _additionalRotation, recalculatedAngle, _spinCurve.Evaluate(_timer / _respinTime))));
+                float additionalRotation2;
+                if (_round == 1)
+                {
+                    additionalRotation2 = _additionalRotation5;
+                }
+                else if (_round == 2)
+                {
+                    additionalRotation2 = _additionalRotation10;
+                }
+                else
+                {
+                    additionalRotation2 = _additionalRotation15;
+                }
+                float recalculatedAngle = (((_spinResult * 360) / _spinOptions.Length) + ((0.5f * 360) / _spinOptions.Length)) + 90 + additionalRotation2 + 1800;
+                _wheel.transform.Rotate(new Vector3(0, 0, Mathf.Lerp(_spinRotation + 90 + additionalRotation2, recalculatedAngle, _spinCurve.Evaluate(_timer / _respinTime))));
                 if (_timer > _respinTime)
                 {
                     _timer = 0;
@@ -132,6 +181,22 @@ public class BombMinigame : MonoBehaviour
                 break;
             case GameStateBalloon.PumpingBalloon:
                 _timer += Time.deltaTime;
+                if (_totalNumberOfPumps >= _goalNumberOfPumps)
+                {
+                    _totalNumberOfPumps = _goalNumberOfPumps;
+                    _player1Turn = !_player1Turn;
+                    if (_player1Turn)
+                    {
+                        //SetInfoText("Player 1 spins");
+                        _switchPlayersUI.AnimSwitch(true);
+                    }
+                    else
+                    {
+                        //SetInfoText("Player 2 spins");
+                        _switchPlayersUI.AnimSwitch(false);
+                    }
+                    ChangeGameState(GameStateBalloon.WaitingForSpin);
+                }
                 break;
             case GameStateBalloon.WaitingForNewRound:
                 _timer += Time.deltaTime;
@@ -141,10 +206,12 @@ public class BombMinigame : MonoBehaviour
                     _player1Turn = !_player1Turn;
                     if (_player1Turn)
                     {
+                        _switchPlayersUI.AnimSwitch(true);
                         //SetInfoText("Player 1 spins");
                     }
                     else
                     {
+                        _switchPlayersUI.AnimSwitch(false);
                         //SetInfoText("Player 2 spins");
                     }
                     StartNewRound();
@@ -196,8 +263,6 @@ public class BombMinigame : MonoBehaviour
                 {
                     _goalNumberOfPumps += _spinOptions[i];
                     _spinResult = i;
-                    Debug.Log("Number of pumps added : " + _spinOptions[i]);
-                    Debug.Log("Rot : " + _spinRotation / 360 + " Length : " + i / _spinOptions.Length + " length + 1 : " + (i + 1) / _spinOptions.Length);
                 }
             }
             _spinRotation += 1800;
@@ -205,6 +270,7 @@ public class BombMinigame : MonoBehaviour
         }
         else if (_gameState == GameStateBalloon.PumpingBalloon && _timer > _timeBetweenPumps)
         {
+            _totalNumberOfPumps++;
             _timer = 0;
             if (_totalNumberOfPumps >= _randomNumberResult)
             {
@@ -268,7 +334,6 @@ public class BombMinigame : MonoBehaviour
             }
             else
             {
-                _totalNumberOfPumps++;
                 _balloonAnims.Pump();
                 if (_totalNumberOfPumps >= _goalNumberOfPumps)
                 {
@@ -278,12 +343,12 @@ public class BombMinigame : MonoBehaviour
                     if (_player1Turn)
                     {
                         //SetInfoText("Player 1 spins");
-                        _switchPlayersUI.AnimSwitch(false);
+                        _switchPlayersUI.AnimSwitch(true);
                     }
                     else
                     {
                         //SetInfoText("Player 2 spins");
-                        _switchPlayersUI.AnimSwitch(true);
+                        _switchPlayersUI.AnimSwitch(false);
                     }
                     ChangeGameState(GameStateBalloon.WaitingForSpin);
                 }
