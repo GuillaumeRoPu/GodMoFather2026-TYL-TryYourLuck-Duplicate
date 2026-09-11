@@ -15,6 +15,9 @@ public class ChronoTurnBasedGameController : MonoBehaviour
     [BoxGroup("Channels"), Required]
     [SerializeField] private RoundOutcomeDataGameEvent _onRoundOutcomeAnnouncedChannel;
 
+    [BoxGroup("Channels"), Required]
+    [SerializeField] private IntGameEvent _onGameWinnerDeterminedChannel;
+
     [BoxGroup("Debug"), ReadOnly]
     [SerializeField] private int _roundsWonByPlayerOne;
 
@@ -64,5 +67,7 @@ public class ChronoTurnBasedGameController : MonoBehaviour
     {
         int gameWinnerPlayerIndex = _roundsWonByPlayerOne >= _roundsWonByPlayerTwo ? 0 : 1;
         Debug.Log($"[ChronoTurnBased] Fin de la partie (BO3) : Joueur {gameWinnerPlayerIndex + 1} remporte le jeu ({_roundsWonByPlayerOne} - {_roundsWonByPlayerTwo}).");
+
+        _onGameWinnerDeterminedChannel.Raise(gameWinnerPlayerIndex);
     }
 }
