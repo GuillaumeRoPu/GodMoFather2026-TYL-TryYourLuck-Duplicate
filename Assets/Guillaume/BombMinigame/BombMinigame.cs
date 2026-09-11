@@ -1,7 +1,9 @@
 using TMPro;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BombMinigame : MonoBehaviour
@@ -45,6 +47,7 @@ public class BombMinigame : MonoBehaviour
     [SerializeField] private UnityEvent _stopSpin;
     [SerializeField] private UnityEvent _roundWon;
     [SerializeField] private UnityEvent _gameWon;
+    [SerializeField] private UnityEvent _openCurtains;
     [SerializeField] private UnityEvent _closeCurtains;
     [SerializeField] private UnityEvent _gameEnded;
 
@@ -58,9 +61,23 @@ public class BombMinigame : MonoBehaviour
         WaitingForNewRound,
         Ended,
         CloseCurtains,
+        None,
+    }
+
+    private enum End
+    {
+        none,
+        close,
+        open,
+        closeagain,
+        done,
     }
 
     private GameStateBalloon _gameState;
+    private End _endState;
+    [SerializeField] private GameWinnerView _gmView;
+    [SerializeField] private GameObject _vicScreen;
+    private int _playerWon;
 
     private void Start()
     {
@@ -109,6 +126,7 @@ public class BombMinigame : MonoBehaviour
             _wheel.GetComponent<Image>().sprite = _wheel15Sprite;
             _spinOptions = _wheel15Options;
         }
+        ChooseRandomNumber();
         _balloonAnims.Base();
     }
 
@@ -229,13 +247,46 @@ public class BombMinigame : MonoBehaviour
                 break;
             case GameStateBalloon.CloseCurtains:
                 _timer += Time.deltaTime;
-                if (_timer >= 3)
+                if (_timer >= 2)
                 {
                     EndGame();
+                    ChangeGameState(End.close);
+                    ChangeGameState(GameStateBalloon.None);
                 }
+                break;
+            case GameStateBalloon.None:
                 break;
             default:
                 Debug.LogError("default activated in switch");
+                break;
+        }
+
+        switch (_endState)
+        {
+            case End.none:
+                break;
+            case End.close:
+                _timer += Time.deltaTime;
+                if (_timer > 0.5f)
+                {
+                    ChangeGameState(End.open);
+                }
+                break;
+            case End.open:
+                _timer += Time.deltaTime;
+                if (_timer > 3)
+                {
+                    ChangeGameState(End.closeagain);
+                }
+                break;
+            case End.closeagain:
+                _timer += Time.deltaTime;
+                if (_timer > 2)
+                {
+                    ChangeGameState(End.done);
+                }
+                break;
+            case End.done:
                 break;
         }
     }
@@ -324,10 +375,12 @@ public class BombMinigame : MonoBehaviour
                     if (_player1Points >= _roundsToWin)
                     {
                         //SetInfoText("PLAYER 1 WON !!!!");
+                        _playerWon = 0;
                     }
                     else
                     {
                         //SetInfoText("PLAYER 2 WON !!!!");
+                        _playerWon = 1;
                     }
                     ChangeGameState(GameStateBalloon.Ended);
                 }
@@ -406,6 +459,29 @@ public class BombMinigame : MonoBehaviour
                 }
                 //SetInfoText(text);
             }
+        }
+    }
+
+    private void ChangeGameState(End state)
+    {
+        _timer = 0;
+        _endState = state;
+        if (state == End.close)
+        {
+            _vicScreen.SetActive(true);
+            _gmView.SetWinnerPlayerIndex(_playerWon);
+        }
+        if (state == End.open)
+        {
+            _openCurtains.Invoke();
+        }
+        if (state == End.closeagain)
+        {
+            _closeCurtains.Invoke();
+        }
+        if (state == End.done)
+        {
+            SceneManager.LoadScene(0);
         }
     }
 }

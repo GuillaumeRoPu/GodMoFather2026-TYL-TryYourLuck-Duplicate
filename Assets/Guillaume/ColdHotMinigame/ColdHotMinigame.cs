@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ColdHotMinigame : MonoBehaviour
@@ -27,6 +28,7 @@ public class ColdHotMinigame : MonoBehaviour
     [SerializeField] private UnityEvent _redeemedAnswer;
     [SerializeField] private UnityEvent _roundWon;
     [SerializeField] private UnityEvent _gameWon;
+    [SerializeField] private UnityEvent _openCurtains;
     [SerializeField] private UnityEvent _closeCurtains;
     [SerializeField] private UnityEvent _gameEnded;
 
@@ -38,9 +40,23 @@ public class ColdHotMinigame : MonoBehaviour
         WaitingForNewRound,
         Ended,
         CloseCurtains,
+        None,
+    }
+
+    private enum End
+    {
+        none,
+        close,
+        open,
+        closeagain,
+        done,
     }
 
     private GameStateCH _gameState;
+    private End _endState;
+    [SerializeField] private GameWinnerView _gmView;
+    [SerializeField] private GameObject _vicScreen;
+    private int _playerWon;
 
     private void Start()
     {
@@ -66,11 +82,12 @@ public class ColdHotMinigame : MonoBehaviour
             _player1Turn = false;
             _switchPlayersUI.AnimSwitch(false);
         }
-        else if (_round != 1)
+        else
         {
             _player1Turn = true;
             _switchPlayersUI.AnimSwitch(true);
         }
+        ChooseRandomNumber();
         _gameState = GameStateCH.Start;
         _timer = 0;
     }
@@ -125,7 +142,7 @@ public class ColdHotMinigame : MonoBehaviour
                 break;
             case GameStateCH.Ended:
                 _timer += Time.deltaTime;
-                if (_timer >= 3)
+                if (_timer >= 2)
                 {
                     _timer = 0;
                     ChangeGameState(GameStateCH.CloseCurtains);
@@ -135,15 +152,50 @@ public class ColdHotMinigame : MonoBehaviour
                 break;
             case GameStateCH.CloseCurtains:
                 _timer += Time.deltaTime;
-                if (_timer >= 3)
+                if (_timer >= 2)
                 {
                     EndGame();
+                    ChangeGameState(End.close);
+                    ChangeGameState(GameStateCH.None);
                 }
+                break;
+            case GameStateCH.None:
                 break;
             default:
                 Debug.LogError("default activated in switch");
                 break;
         }
+
+        switch (_endState)
+        {
+            case End.none:
+                break;
+            case End.close:
+                _timer += Time.deltaTime;
+                if (_timer > 0)
+                {
+                    ChangeGameState(End.open);
+                }
+                break;
+            case End.open:
+                _timer += Time.deltaTime;
+                if (_timer > 4)
+                {
+                    ChangeGameState(End.closeagain);
+                }
+                break;
+            case End.closeagain:
+                _timer += Time.deltaTime;
+                if (_timer > 2)
+                {
+                    ChangeGameState(End.done);
+                }
+                break;
+            case End.done:
+                break;
+        }
+
+        Debug.Log(_player1Turn);
     }
 
     private void ChooseRandomNumber()
@@ -234,16 +286,17 @@ public class ColdHotMinigame : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("Went there, done that");
                     if (_player1Points >= _roundsToWin)
                     {
                         //SetInfoText("PLAYER 1 WON !!!!");
-                        _textBoardPlusMinus.text = "P1 WON !";
+                        _textBoardPlusMinus.text = "P1 WON ROUND";
+                        _playerWon = 0;
                     }
                     else
                     {
                         //SetInfoText("PLAYER 2 WON !!!!");
-                        _textBoardPlusMinus.text = "P2 WON !";
+                        _textBoardPlusMinus.text = "P2 WON ROUND";
+                        _playerWon = 1;
                     }
                     //_numberResultText.text = _randomNumberResult.ToString();
                     _gameWon.Invoke();
@@ -270,6 +323,29 @@ public class ColdHotMinigame : MonoBehaviour
         if (state == GameStateCH.Answered)
         {
             _timer = 0;
+        }
+    }
+
+    private void ChangeGameState(End state)
+    {
+        _timer = 0;
+        _endState = state;
+        if (state == End.close)
+        {
+            _vicScreen.SetActive(true);
+            _gmView.SetWinnerPlayerIndex(_playerWon);
+        }
+        if (state == End.open)
+        {
+            _openCurtains.Invoke();
+        }
+        if (state == End.closeagain)
+        {
+            _closeCurtains.Invoke();
+        }
+        if (state == End.done)
+        {
+            SceneManager.LoadScene(0);
         }
     }
 }
