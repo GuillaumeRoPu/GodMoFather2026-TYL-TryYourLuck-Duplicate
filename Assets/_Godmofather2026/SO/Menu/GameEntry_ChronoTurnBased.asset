@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: GameEntry_ChronoTurnBased
   m_EditorClassIdentifier: Assembly-CSharp::GameEntry
   _gameId: chrono-turnbased
-  _displayName: 'Chrono : Le Meme Chrono'
-  _icon: {fileID: 21300044, guid: 7ab74e659e1f0a34d9cfec21c478fc12, type: 3}
+  _displayName: You Shouldn't Pass
+  _icon: {fileID: 21300000, guid: c517308ce4d1c5f4c9d4eb168d46fbff, type: 3}
   _sceneName: Chrono2

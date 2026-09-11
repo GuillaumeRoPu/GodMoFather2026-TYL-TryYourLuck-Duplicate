@@ -68,7 +68,7 @@ public class MatchmakingReelController : MonoBehaviour
         Debug.Log("[Matchmaking] Reel arrete, matchmaking termine");
         _onMatchmakingFinishedChannel.Raise();
 
-        StartCoroutine(ActivateSelectedGameSceneAfterDelay());
+        // StartCoroutine(ActivateSelectedGameSceneAfterDelay());
     }
 
     private IEnumerator ActivateSelectedGameSceneAfterDelay()

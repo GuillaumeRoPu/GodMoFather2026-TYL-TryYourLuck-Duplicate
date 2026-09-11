@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: GameEntry_ChronoBomb
   m_EditorClassIdentifier: Assembly-CSharp::GameEntry
   _gameId: bomb
-  _displayName: Don't explode
-  _icon: {fileID: 21300012, guid: 358b5d9f23bc9413e87c9948acc67ee1, type: 3}
+  _displayName: "Roul\xE9boum\xE9"
+  _icon: {fileID: 21300000, guid: e905b39fb072d734c8d69a40918e68d2, type: 3}
   _sceneName: Bomb Minigame
