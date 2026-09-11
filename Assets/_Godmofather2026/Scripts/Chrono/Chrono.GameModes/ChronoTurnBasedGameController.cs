@@ -30,7 +30,7 @@ public class ChronoTurnBasedGameController : MonoBehaviour
     {
         ChronoTrack[] chronoTracks = { _sharedTrack };
         _roundManager.Initialize(new DoNotExceedRule(), new AlternatingTurnProvider(_playerCount), chronoTracks, autoEliminateOnExceedTarget: true, useCooldownBetweenRounds: false, IsGameOver);
-        _roundManager.StartGame();
+        // _roundManager.StartGame();
     }
 
     private bool IsGameOver()
