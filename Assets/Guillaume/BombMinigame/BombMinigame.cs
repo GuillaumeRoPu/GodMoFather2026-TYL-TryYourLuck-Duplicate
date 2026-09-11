@@ -10,7 +10,6 @@ public class BombMinigame : MonoBehaviour
     [SerializeField] private GameObject _round2Cell; //UI for rounds
     [SerializeField] private GameObject _round3Cell; //UI for rounds
     [SerializeField] private PlayerSwitch _switchPlayersUI; //UI to switch between player 1 and player 2
-    [SerializeField] private CurtainOpenClose _openCloseCurtainsUI; //UI to open and close curtains
     [SerializeField] private GameObject _wheel; //Wheel object
     [SerializeField] private Sprite _wheel5Sprite;
     [SerializeField] private Sprite _wheel10Sprite;
@@ -46,6 +45,7 @@ public class BombMinigame : MonoBehaviour
     [SerializeField] private UnityEvent _stopSpin;
     [SerializeField] private UnityEvent _roundWon;
     [SerializeField] private UnityEvent _gameWon;
+    [SerializeField] private UnityEvent _closeCurtains;
     [SerializeField] private UnityEvent _gameEnded;
 
     private enum GameStateBalloon
@@ -223,7 +223,7 @@ public class BombMinigame : MonoBehaviour
                 {
                     _timer = 0;
                     ChangeGameState(GameStateBalloon.CloseCurtains);
-                    _openCloseCurtainsUI.PullDown();
+                    _closeCurtains.Invoke();
                     break;
                 }
                 break;

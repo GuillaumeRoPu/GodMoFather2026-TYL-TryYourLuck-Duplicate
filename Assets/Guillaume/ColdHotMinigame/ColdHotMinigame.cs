@@ -10,7 +10,6 @@ public class ColdHotMinigame : MonoBehaviour
     [SerializeField] private GameObject _round2Cell; //UI for rounds
     [SerializeField] private GameObject _round3Cell; //UI for rounds
     [SerializeField] private PlayerSwitch _switchPlayersUI; //UI to switch between player 1 and player 2
-    [SerializeField] private CurtainOpenClose _openCloseCurtainsUI; //UI to open and close curtains
     [SerializeField] private TMP_InputField _inputNumberField; //Input Field for the players to answer their number
     [SerializeField] private TMP_Text _textBoardPlusMinus; //Text board to display info
     [SerializeField] private Vector2 _minMaxNumber; //Min and max numbers for the random number chosen
@@ -28,6 +27,7 @@ public class ColdHotMinigame : MonoBehaviour
     [SerializeField] private UnityEvent _redeemedAnswer;
     [SerializeField] private UnityEvent _roundWon;
     [SerializeField] private UnityEvent _gameWon;
+    [SerializeField] private UnityEvent _closeCurtains;
     [SerializeField] private UnityEvent _gameEnded;
 
     private enum GameStateCH
@@ -129,7 +129,7 @@ public class ColdHotMinigame : MonoBehaviour
                 {
                     _timer = 0;
                     ChangeGameState(GameStateCH.CloseCurtains);
-                    _openCloseCurtainsUI.PullDown();
+                    _closeCurtains.Invoke();
                     break;
                 }
                 break;
